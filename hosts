@@ -1,0 +1,23 @@
+[web_server]
+18.159.51.126
+
+[web_server:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=ansible-ssh-key.pem
+linux_user=sgworker
+project_dir="/Users/sgworker/Desktop/ansible_exercises/ansible-exercises"
+jar_name=build-tools-exercises-1.0-SNAPSHOT.jar
+
+[localhost]
+localhost ansible_connection=local
+
+
+[localhost:vars]
+project_dir=/Users/sgworker/Desktop/ansible_exercises/ansible-exercises
+jar_name=build-tools-exercises-1.0-SNAPSHOT.jar
+nexus_url=http://85.215.45.206:8081
+nexus_user=sg
+nexus_password=seherim01
+artifact_name=sg_devops_java_app
+artifact_version=1.0-SNAPSHOT
+jar_file_path=/Users/sgworker/Desktop/ansible_exercises/ansible-exercises/build/libs/build-tools-exercises-1.0-SNAPSHOT.jar
