@@ -1,0 +1,101 @@
+- name: Create Linux user
+  hosts: web_server
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Create linux user
+      user:
+        name: "{{ linux_user }}"
+        group: adm
+
+- name: Make sure Java is installed
+  hosts: web_server
+  become: true
+  tasks:
+    - name: Update apt repo cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: Add the AdoptOpenJDK APT repository
+      apt_repository:
+        repo: 'ppa:openjdk-r/ppa'
+        state: present
+
+    - name: Install OpenJDK 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: Set JAVA_HOME environment variable
+      lineinfile:
+        path: /etc/environment
+        line: 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64'
+        create: yes
+        state: present
+
+- name: Build application
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Build jar
+      command:
+        chdir: "{{ project_dir }}"
+        cmd: gradle clean build
+
+- name: Stop the currently running Java application and remove old jar file
+  hosts: web_server
+  become: true
+  tasks:
+    - name: Find existing jar file
+      find:
+        paths: "/home/{{ linux_user }}"
+        patterns: "*.jar"
+        file_type: file
+      register: find_result
+
+    - name: Kill any running Java process
+      shell: "ps -ef | grep java | grep -v grep | awk '{print $2}' | xargs -r kill"
+      ignore_errors: yes
+
+    - name: Remove existing jar files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ find_result.files }}"
+      when: find_result.files | length > 0
+
+- name: Deploy Java application
+  hosts: web_server
+  become: true
+  tasks:
+    - name: Copy jar file to remote server
+      copy:
+        src: "{{ project_dir }}/build/libs/{{ jar_name }}"
+        dest: "/home/{{ linux_user }}/"
+        owner: "{{ linux_user }}"
+        group: adm
+        mode: '0755'
+
+    - name: Start the application as sgworker (without become_user)
+      become: true
+      shell: "sudo -u {{ linux_user }} nohup java -jar {{ jar_name }} > /home/{{ linux_user }}/app.log 2>&1 &"
+      args:
+        chdir: "/home/{{ linux_user }}"
+      async: 1000
+      poll: 0
+      register: result
+
+    - name: Debug async result
+      debug:
+        msg: "{{ result }}"
+
+    - name: Check if Java app is running
+      shell: "ps aux | grep java | grep -v grep"
+      register: app_status
+
+    - name: Debug app status
+      debug:
+        msg: "{{ app_status.stdout_lines }}"

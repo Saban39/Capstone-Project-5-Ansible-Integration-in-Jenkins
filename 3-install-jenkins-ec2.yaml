@@ -15,11 +15,12 @@
   hosts: "{{ hostvars['localhost']['ec2_result'].instances[0].public_ip_address }}"
   become: yes
   tasks:
-  - name: Install Java
+  - name: Install Java 17
     yum:
-      name: java-11-amazon-corretto
-      update_cache: yes
-      state: present
+        name: java-17-amazon-corretto
+        update_cache: yes
+        state: present
+  
   - name: Install Jenkins Repository
     get_url:
       url: https://pkg.jenkins.io/redhat-stable/jenkins.repo

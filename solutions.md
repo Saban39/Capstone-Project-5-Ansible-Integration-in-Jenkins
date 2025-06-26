@@ -72,7 +72,7 @@ ansible-playbook 3-provision-jenkins-ec2.yaml --extra-vars "ssh_key_path=/path/t
 # Wait until the server is fully initialised
 
 # Execute to configure jenkins server 
-ansible-playbook -i hosts-jenkins-server 3-install-jenkins-ec2.yaml --extra-vars "aws_region=your-aws-region"
+ansible-playbook -i hosts-jenkins-server 3-install-jenkins-ec2.yaml --extra-vars "aws_region=eu-central-1"
 ```
 
 </details>
@@ -93,6 +93,9 @@ ansible-playbook -i hosts-jenkins-server 3-install-jenkins-ec2.yaml --extra-vars
 
 # To Create and configure Jenkins on --ubuntu-- EC2 instance
 ansible-playbook 3-provision-jenkins-ec2.yaml --extra-vars "ssh_key_path=/path/to/ssh-key/file aws_region=your-aws-region key_name=your-key-pair-name subnet_id=your-subnet-id ami_id=image-id-for-ubuntu ssh_user=ubuntu"
+
+
+
 
 ansible-playbook -i hosts-jenkins-server 4-install-jenkins-ubuntu.yaml --extra-vars "host_os=ubuntu aws_region=your-aws-region"
 

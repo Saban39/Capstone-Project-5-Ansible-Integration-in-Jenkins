@@ -10,9 +10,15 @@
         "tag:Name": "jenkins-server"
     register: ec2_result
 
+  - name: Debug EC2 instance info
+    debug:
+      var: ec2_result
+
+  
+
 # Prepare Jenkins Server - by installing Docker
 - name: Prepare server for Jenkins
-  hosts: "{{ hostvars['localhost']['ec2_result'].instances[0].public_ip_address }}"
+  hosts: "{{ hostvars['localhost']['ec2_result'].instances[1].public_ip_address }}"
   become: yes
   tasks:
   - name: Update apt repo cache
@@ -30,7 +36,7 @@
 
 
 - name: Start Jenkins container on ec2 instance
-  hosts: "{{ hostvars['localhost']['ec2_result'].instances[0].public_ip_address }}"
+  hosts: "{{ hostvars['localhost']['ec2_result'].instances[1].public_ip_address }}"
   become: yes
   tasks:
   - name: Get location of docker executable
@@ -48,11 +54,11 @@
       - "{{ docker_result.stdout }}:/usr/bin/docker"
       - jenkins_home:/var/jenkins_home
       ports:
-      - "8080:8080"
+      - "9090:8080"
       - "50000:50000"
   
 - name: Set Docker permission
-  hosts: "{{ hostvars['localhost']['ec2_result'].instances[0].public_ip_address }}"
+  hosts: "{{ hostvars['localhost']['ec2_result'].instances[1].public_ip_address }}"
   become: yes
   tasks:  
   - name: Set docker permission for Jenkins user

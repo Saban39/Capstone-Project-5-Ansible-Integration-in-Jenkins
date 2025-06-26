@@ -1,6 +1,6 @@
-- name: Install Java
+- name: Install Java 17
   yum:
-    name: java-11-amazon-corretto
+    name: java-17-amazon-corretto
     update_cache: yes
     state: present
 - name: Install Jenkins Repository

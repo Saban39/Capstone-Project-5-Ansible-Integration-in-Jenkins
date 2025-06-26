@@ -2,10 +2,10 @@
 - name: Configure Database server
   hosts: tag_Name_database_server # from dynamic inventory file
   vars_files:
-  - 6-vars.yaml
+    - 6-vars.yaml
   roles:
-  - role: geerlingguy.mysql
-    become: yes
+    - role: geerlingguy.mysql
+  become: yes
   tasks:
   - name: validate mysql service started
     shell: ps aux | grep mysql
@@ -19,15 +19,30 @@
   tasks:
   - name: Update apt repo cache
     apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
-  - name: Install java 11
-    apt: name=openjdk-11-jdk 
+  - name: Add the AdoptOpenJDK APT repository
+    apt_repository:
+        repo: 'ppa:openjdk-r/ppa'
+        state: present
+
+  - name: Install OpenJDK 17
+    apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+  - name: Set JAVA_HOME environment variable
+    lineinfile:
+        path: /etc/environment
+        line: 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64'
+        create: yes
+        state: present
 
 - name: Configure web server
   hosts: tag_Name_web_server # from dynamic inventory file
   tasks:
   - name: Copy jar file to server
     copy:
-      src: /home/ubuntu/bootcamp-java-mysql-project-1.0-SNAPSHOT.jar
+      src: /home/ubuntu/build-tools-exercises-1.0-SNAPSHOT.jar
       dest: java-app.jar
 
   - name: Start java application with needed env vars

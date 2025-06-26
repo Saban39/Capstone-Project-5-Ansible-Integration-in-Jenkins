@@ -4,8 +4,8 @@
   tasks:
   - name: Start an instance with a public IP address
     amazon.aws.ec2_instance:
-      name: ansible-server
-      key_name: ansible-control-server-key
+      name: ansible_server_control_plane
+      key_name: ansible-ssh-key
       region: "{{ aws_region }}"
       vpc_subnet_id: "{{ subnet_id }}"
       instance_type: t2.micro
@@ -13,3 +13,6 @@
       image_id: "{{ ami_id }}"
       network:
         assign_public_ip: true
+    register: ec2_result
+  
+ 

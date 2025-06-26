@@ -7,6 +7,17 @@
     amazon.aws.ec2_vpc_net_info:
       region: "{{ aws_region }}"
     register: vpc_result
+    
+  - name: Get EC2 instances with Name tag 'jenkins-server'
+    amazon.aws.ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+          "tag:Name": "jenkins-server"
+          instance-state-name: "running"
+    register: ec2_result
+
+  - debug: msg={{ ec2_result }}
+
   - debug: msg={{ vpc_result }}
   - name: Start an instance with a public IP address
     amazon.aws.ec2_instance:
@@ -25,12 +36,12 @@
   # On creation, ec2_result object doesn't get public_ip attribute immediately, cuz the assignment takes time, so we wait and then query again
   - pause:
       seconds: 60
-  - name: Get public_ip address of the ec2 instance 
-    amazon.aws.ec2_instance_info:
-      region: "{{ aws_region }}"
-      instance_ids:
-      - "{{ ec2_result.instance_ids[0] }}"
-    register: ec2_result
+  - name: Ensure hosts file exists
+    file:
+      path: hosts-jenkins-server
+      state: touch
+
+
   - name: update hosts file
     lineinfile:
       path: "hosts-jenkins-server"
