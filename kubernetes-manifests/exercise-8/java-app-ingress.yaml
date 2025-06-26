@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: host-name-here
+  - host: my-java-app.com
     http:
       paths:
       - backend:
@@ -14,5 +14,6 @@ spec:
             name: java-app-service
             port: 
               number: 8080
-        pathType: Exact
+        pathType: Prefix
         path: /
+  

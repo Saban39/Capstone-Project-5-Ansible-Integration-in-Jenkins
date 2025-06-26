@@ -18,7 +18,7 @@ spec:
       - name: my-registry-key
       containers:
       - name: javamysqlapp
-        image: nanatwn/demo-app:java-mysql-app
+        image: sg1905/demo-app:java-mysql-app
         ports:
         - containerPort: 8080
         env:
