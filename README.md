@@ -1,12 +1,12 @@
 
 #### This project is for the Devops Bootcamp module "15-Configuration Management with Ansible" 
 
-I created a fully automated CI/CD pipeline to deploy a Java application on an Amazon EKS (Elastic Kubernetes Service) cluster.
-Through this project, I learned how to provision an EKS cluster using eksctl,  how to manage Docker images using both Docker Hub and Amazon ECR. 
-I also gained hands-on experience in configuring Jenkins pipelines and writing a Jenkinsfile to automate the build, test, and deployment processes.
-First, I used eksctl to create an EKS cluster on AWS. Then, I built a Docker image of my Java application and initially tested the deployment using Docker Hub. 
-Later, I pushed the image to an Amazon ECR repository. After setting up Jenkins, I wrote a Jenkinsfile to automate the entire CI/CD process — including building the image, pushing it to ECR, and deploying it to the EKS cluster. 
-This way, any code changes automatically triggered the pipeline and deployed the updated application.
+I built an automated deployment setup using Ansible for provisioning infrastructure and deploying a Java Gradle application.
+This project taught me how to use Ansible for full infrastructure automation, how to push application artifacts to a Nexus repository, and how to deploy applications onto a Kubernetes cluster.
+I also gained hands-on experience with provisioning EC2 instances on AWS and setting up local Kubernetes environments with Docker Desktop.
+I pushed a Java Gradle application to a Nexus repository. Then, I used Ansible to provision two EC2 instances on AWS. On one instance, I installed Java and Jenkins (as a regular application, not used for automation).
+Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the application to the cluster — again fully automated with Ansible. The entire process from infrastructure provisioning to deployment was handled through Ansible without using Jenkins pipelines.
+
 
 
 ## 📄 Included PDF Resources
