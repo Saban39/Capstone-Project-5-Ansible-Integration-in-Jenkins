@@ -13,7 +13,7 @@ This way, any code changes automatically triggered the pipeline and deployed the
 
 CAPSTONE PROJECT-2
 
-- [11-Kubernetes_on_AWS-EKS.pdf](./11-Kubernetes_on_AWS-EKS.pdf): Contains my notes, solutions, and test results related to Configuration Management with Ansible.
+- [15-Configuration Management with Ansible](./15-Configuration_Management_with_Ansible.pdf): Contains my notes, solutions, and test results related to Configuration Management with Ansible.
 
 
 All of my notes, work, solutions, and test results can be found in the PDF 11-Kubernetes_on_AWS-EKS.pdf. 
@@ -21,7 +21,7 @@ My complete documentation, including all notes and tests from the bootcamp, is a
 
 
 # 15 - Configuration Management with Ansible
-## My notes, work, solutions, and test results for Module "Kubernetes on AWS"
+## My notes, work, solutions, and test results for Module "Configuration Management with Ansible"
 
 
 
