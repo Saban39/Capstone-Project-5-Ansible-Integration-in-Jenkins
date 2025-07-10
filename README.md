@@ -1,4 +1,4 @@
-
+# 15 - Configuration Management with Ansible
 #### This project is for the Devops Bootcamp module "15-Configuration Management with Ansible" 
 
 I built an automated deployment setup using Ansible for provisioning infrastructure and deploying a Java Gradle application.
@@ -23,7 +23,7 @@ All of my notes, work, solutions, and test results can be found in the PDF 11-Ku
 My complete documentation, including all notes and tests from the bootcamp, is available in this repository: https://github.com/Saban39/my_devops-bootcamp-pdf-notes-and-solutions.git
 
 
-# 15 - Configuration Management with Ansible
+
 ## My notes, work, solutions, and test results for Module "Configuration Management with Ansible"
 
 
