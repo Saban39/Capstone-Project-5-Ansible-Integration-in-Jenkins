@@ -13,10 +13,10 @@ Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the a
 
 CAPSTONE PROJECT-2
 
-Evidence / Proof
-Here are my notes, work, solutions, and test results for the module "Configuration Management with Ansible":
-👉 PDF Link to Module Notes & Work
-- [15-Configuration Management with Ansible](./15-Configuration_Management_with_Ansible.pdf): Contains my notes, solutions, and test results related to Configuration Management with Ansible.
+## Evidence / Proof
+
+Here are my notes, work, solutions, and test results for the module **"Configuration Management with Ansible"**:  
+👉 [PDF Link to Module Notes & Work](./15-Configuration_Management_with_Ansible.pdf)
 
 
 All of my notes, work, solutions, and test results can be found in the PDF 11-Kubernetes_on_AWS-EKS.pdf. 
