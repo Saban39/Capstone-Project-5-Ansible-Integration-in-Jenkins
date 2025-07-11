@@ -1,0 +1,75 @@
+- name: Deploy nginx with custom default site on EKS cluster
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create ConfigMap with custom index.html
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: nginx-html
+            namespace: default
+          data:
+            index.html: |
+              <html>
+              <head><title>My Custom Nginx Site</title></head>
+              <body>
+              <h1>Welcome to My Custom Nginx Site sg1905w1@gmail.com for my Capstone 2 Project!</h1>
+              <p>This page is served from a ConfigMap via Ansible.</p>
+              </body>
+              </html>
+
+    - name: Create nginx deployment with custom html volume
+      k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: nginx-deployment
+            namespace: default
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: nginx
+            template:
+              metadata:
+                labels:
+                  app: nginx
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:latest
+                  ports:
+                  - containerPort: 80
+                  volumeMounts:
+                  - name: nginx-html-volume
+                    mountPath: /usr/share/nginx/html
+                volumes:
+                - name: nginx-html-volume
+                  configMap:
+                    name: nginx-html
+                    items:
+                      - key: index.html
+                        path: index.html
+
+    - name: Create nginx service
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nginx-service
+            namespace: default
+          spec:
+            selector:
+              app: nginx
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 80
+            type: LoadBalancer
