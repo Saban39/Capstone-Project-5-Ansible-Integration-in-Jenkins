@@ -80,6 +80,151 @@ aws eks update-cluster-config \
   --resources-vpc-config endpointPublicAccess=true,endpointPrivateAccess=true
 ```
 This enabled public access to the EKS cluster's API endpoint.
+```sh
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
+% aws eks --region eu-west-1 update-kubeconfig --name my-eks-cluster
+kubectl get nodes
+Updated context arn:aws:eks:eu-west-1:524196012679:cluster/my-eks-cluster in /Users/sgworker/.kube/config
+
+E0711 15:32:58.640334    5584 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
+E0711 15:33:28.644432    5584 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
+NAME                                       STATUS   ROLES    AGE   VERSION
+ip-10-0-1-155.eu-west-1.compute.internal   Ready    <none>   14m   v1.28.15-eks-473151a
+ip-10-0-3-18.eu-west-1.compute.internal    Ready    <none>   14m   v1.28.15-eks-473151a
+```
+After that, I used my Ansible playbook to deploy Nginx with a custom default page on the EKS cluster. The playbook performed the following steps:
+
+Created a ConfigMap that contains a custom index.html file.
+
+Deployed an Nginx Deployment with two replicas, which mounts the ConfigMap to serve the custom HTML page.
+Exposed the Nginx Deployment using a Service of type LoadBalancer, making it accessible externally.
+Here is the relevant portion of the playbook:
+
+my deploy-nginx.yaml
+
+```sh
+- name: Deploy nginx with custom default site on EKS cluster
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create ConfigMap with custom index.html
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: nginx-html
+            namespace: default
+          data:
+            index.html: |
+              <html>
+              <head><title>My Custom Nginx Site</title></head>
+              <body>
+              <h1>Welcome to My Custom Nginx Site sg1905w1@gmail.com for my Capstone 2 Project!</h1>
+              <p>This page is served from a ConfigMap via Ansible.</p>
+              </body>
+              </html>
+
+    - name: Create nginx deployment with custom html volume
+      k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: nginx-deployment
+            namespace: default
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: nginx
+            template:
+              metadata:
+                labels:
+                  app: nginx
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:latest
+                  ports:
+                  - containerPort: 80
+                  volumeMounts:
+                  - name: nginx-html-volume
+                    mountPath: /usr/share/nginx/html
+                volumes:
+                - name: nginx-html-volume
+                  configMap:
+                    name: nginx-html
+                    items:
+                      - key: index.html
+                        path: index.html
+
+    - name: Create nginx service
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nginx-service
+            namespace: default
+          spec:
+            selector:
+              app: nginx
+            ports:
+              - protocol: TCP
+                port: 80
+                targetPort: 80
+            type: LoadBalancer
+
+
+```
+Afterwards, I navigated into the ansible_deployment directory and executed the Ansible playbook using the following command:
+
+```sh
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
+% cd ansible_deployment 
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
+% ansible-playbook deploy-nginx.yml
+```
+my ansible playbook output:
+
+```sh
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
+% ansible-playbook deploy-nginx.yml
+
+PLAY [Deploy nginx with custom default site on EKS cluster] ***************************************************************************************************************************************************************************************************************
+
+TASK [Create ConfigMap with custom index.html] ****************************************************************************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [Create nginx deployment with custom html volume] ********************************************************************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [Create nginx service] ***********************************************************************************************************************************************************************************************************************************************
+ok: [localhost]
+
+PLAY RECAP ****************************************************************************************************************************************************************************************************************************************************************
+localhost                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+```
+```sh
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
+% kubectl get svc nginx-service
+
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)        AGE
+nginx-service   LoadBalancer   172.20.46.49   aa8fa9d038a804602bba24aff2b4ca49-389869002.eu-west-1.elb.amazonaws.com   80:32208/TCP   12m
+```
+I accessed my deployed app in the browser, and here are the screenshots.
+
+<img width="1616" height="1012" alt="Bildschirmfoto 2025-07-11 um 16 01 22" src="https://github.com/user-attachments/assets/8a2c3b3d-e585-4a05-815d-1d0b7ab5a9f4" />
+
+
+
+
+Finally, I deleted the EKS cluster using Terraform in order to avoid further costs.
+
 
 
 
