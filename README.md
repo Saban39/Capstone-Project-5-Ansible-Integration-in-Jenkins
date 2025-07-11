@@ -1,11 +1,11 @@
 
-MY CAPSTONE PROJECT-2
-
-I installed with terraform my eks cluster on amazon:
+# MY CAPSTONE PROJECT-2
+My source files for my Capstone Project are located in the eks-cluster directory on the main branch.
+I set up my EKS cluster on Amazon Web Services using Terraform for infrastructure as code.
 
 my main.tf
 
-
+```sh
 
 terraform {
   required_providers {
@@ -53,8 +53,33 @@ module "eks" {
   }
 }
 
+```
+I initialized the Terraform configuration with terraform init and applied it using terraform apply
+```sh
+.............
+.............
+module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Still creating... [2m40s elapsed]
+module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Still creating... [2m50s elapsed]
+module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Creation complete after 2m59s [id=my-eks-cluster:default-20250711131627437600000011]
+Apply complete! Resources: 53 added, 0 changed, 0 destroyed.
+```
+```sh
+sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
+% aws eks --region eu-west-1 update-kubeconfig --name my-eks-cluster
+kubectl get nodes
+Added new context arn:aws:eks:eu-west-1:524196012679:cluster/my-eks-cluster to /Users/sgworker/.kube/config
+E0711 15:29:24.685234   98135 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
+E0711 15:29:54.688460   98135 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
+```
 
-
+I wasn't able to connect to the cluster using kubectl, so I had to run the following command:
+```sh
+aws eks update-cluster-config \
+  --region eu-west-1 \
+  --name my-eks-cluster \
+  --resources-vpc-config endpointPublicAccess=true,endpointPrivateAccess=true
+```
+This enabled public access to the EKS cluster's API endpoint.
 
 
 
@@ -71,7 +96,7 @@ Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the a
 
 ## 📄 Included PDF Resources
 
-CAPSTONE PROJECT-2
+
 
 ## Evidence / Proof
 
