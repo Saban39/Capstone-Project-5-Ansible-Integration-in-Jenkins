@@ -1,5 +1,19 @@
+## Capstone Project 2: Automate Kubernetes Deployment
 
-# MY CAPSTONE PROJECT-2
+### What did I build?
+I created a fully automated CI/CD pipeline to deploy a Java application on an Amazon EKS (Elastic Kubernetes Service) cluster.
+
+### What have I learned?
+Through this project, I learned how to provision an EKS cluster using eksctl,  how to manage Docker images using both Docker Hub and Amazon ECR. 
+I also gained hands-on experience in configuring Jenkins pipelines and writing a Jenkinsfile to automate the build, test, and deployment processes.
+
+### My project description. 
+First, I used eksctl to create an EKS cluster on AWS. Then, I built a Docker image of my Java application and initially tested the deployment using Docker Hub. 
+Later, I pushed the image to an Amazon ECR repository. After setting up Jenkins, I wrote a Jenkinsfile to automate the entire CI/CD process — including building the image, pushing it to ECR, and deploying it to the EKS cluster. 
+This way, any code changes automatically triggered the pipeline and deployed the updated application.
+
+
+# CAPSTONE PROJECT-2 project execution
 My source files for my Capstone Project are located in the eks-cluster directory on the main branch.
 I set up my EKS cluster on Amazon Web Services using Terraform for infrastructure as code.
 
