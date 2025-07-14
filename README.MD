@@ -1,4 +1,4 @@
-## Capstone Project 2: Automate Kubernetes Deployment
+## Capstone Project 5: Ansible Integration in Jenkins
 
 ### What did I build?
 I built a Kubernetes (EKS) cluster on Amazon Web Services using Terraform. After the infrastructure was provisioned, I used an Ansible playbook, along with the Kubernetes Ansible module, to deploy an Nginx web server with a custom default HTML page inside the EKS cluster.
@@ -10,252 +10,22 @@ Through this project, I learned how to use Terraform to provision cloud infrastr
 The goal of my project was to automate the creation and deployment of a simple web application in a cloud-native environment. First, I used Terraform to define and provision an Amazon EKS cluster. Once the cluster was active, I created an Ansible playbook that deployed an Nginx web server into the cluster. The Nginx server used a custom HTML page, stored in a ConfigMap, which was mounted into the container. The application was exposed to the internet via a LoadBalancer, making it accessible through a browser. After verifying that everything was working, I terminated the cluster using Terraform to avoid unnecessary costs.
 
 
-# CAPSTONE PROJECT-2 project execution
-My source files for my Capstone Project are located in the eks-cluster directory on the main branch.
-I set up my EKS cluster on Amazon Web Services using Terraform for infrastructure as code.
-
-my main.tf
-
-```sh
-
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-provider "aws" {
-  region = "eu-west-1"
-}
-
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.1.1"
-
-  name = "eks-vpc"
-  cidr = "10.0.0.0/16"
-
-  azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-
-  enable_nat_gateway = true
-  single_nat_gateway = true
-}
-
-module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  version         = "~> 19.0"
-
-  cluster_name    = "my-eks-cluster"
-  cluster_version = "1.28"
-  subnet_ids      = module.vpc.private_subnets
-  vpc_id          = module.vpc.vpc_id
-
-  eks_managed_node_groups = {
-    default = {
-      instance_types = ["t3.medium"]
-      desired_size   = 2
-      min_size       = 1
-      max_size       = 3
-    }
-  }
-}
-
-```
-I initialized the Terraform configuration with terraform init and applied it using terraform apply
-```sh
-.............
-.............
-module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Still creating... [2m40s elapsed]
-module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Still creating... [2m50s elapsed]
-module.eks.module.eks_managed_node_group["default"].aws_eks_node_group.this[0]: Creation complete after 2m59s [id=my-eks-cluster:default-20250711131627437600000011]
-Apply complete! Resources: 53 added, 0 changed, 0 destroyed.
-```
-```sh
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
-% aws eks --region eu-west-1 update-kubeconfig --name my-eks-cluster
-kubectl get nodes
-Added new context arn:aws:eks:eu-west-1:524196012679:cluster/my-eks-cluster to /Users/sgworker/.kube/config
-E0711 15:29:24.685234   98135 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
-E0711 15:29:54.688460   98135 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
-```
-
-I wasn't able to connect to the cluster using kubectl, so I had to run the following command:
-```sh
-aws eks update-cluster-config \
-  --region eu-west-1 \
-  --name my-eks-cluster \
-  --resources-vpc-config endpointPublicAccess=true,endpointPrivateAccess=true
-```
-This enabled public access to the EKS cluster's API endpoint.
-```sh
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
-% aws eks --region eu-west-1 update-kubeconfig --name my-eks-cluster
-kubectl get nodes
-Updated context arn:aws:eks:eu-west-1:524196012679:cluster/my-eks-cluster in /Users/sgworker/.kube/config
-
-E0711 15:32:58.640334    5584 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
-E0711 15:33:28.644432    5584 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://7C36DD3DC5FAC52890F16785DD3ADC2B.gr7.eu-west-1.eks.amazonaws.com/api?timeout=32s\": dial tcp 10.0.2.119:443: i/o timeout"
-NAME                                       STATUS   ROLES    AGE   VERSION
-ip-10-0-1-155.eu-west-1.compute.internal   Ready    <none>   14m   v1.28.15-eks-473151a
-ip-10-0-3-18.eu-west-1.compute.internal    Ready    <none>   14m   v1.28.15-eks-473151a
-```
-After that, I used my Ansible playbook to deploy Nginx with a custom default page on the EKS cluster. The playbook performed the following steps:
-
-Created a ConfigMap that contains a custom index.html file.
-
-Deployed an Nginx Deployment with two replicas, which mounts the ConfigMap to serve the custom HTML page.
-Exposed the Nginx Deployment using a Service of type LoadBalancer, making it accessible externally.
-Here is the relevant portion of the playbook:
-
-my deploy-nginx.yaml
-
-```sh
-- name: Deploy nginx with custom default site on EKS cluster
-  hosts: localhost
-  gather_facts: no
-  tasks:
-    - name: Create ConfigMap with custom index.html
-      k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: ConfigMap
-          metadata:
-            name: nginx-html
-            namespace: default
-          data:
-            index.html: |
-              <html>
-              <head><title>My Custom Nginx Site</title></head>
-              <body>
-              <h1>Welcome to My Custom Nginx Site sg1905w1@gmail.com for my Capstone 2 Project!</h1>
-              <p>This page is served from a ConfigMap via Ansible.</p>
-              </body>
-              </html>
-
-    - name: Create nginx deployment with custom html volume
-      k8s:
-        state: present
-        definition:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: nginx-deployment
-            namespace: default
-          spec:
-            replicas: 2
-            selector:
-              matchLabels:
-                app: nginx
-            template:
-              metadata:
-                labels:
-                  app: nginx
-              spec:
-                containers:
-                - name: nginx
-                  image: nginx:latest
-                  ports:
-                  - containerPort: 80
-                  volumeMounts:
-                  - name: nginx-html-volume
-                    mountPath: /usr/share/nginx/html
-                volumes:
-                - name: nginx-html-volume
-                  configMap:
-                    name: nginx-html
-                    items:
-                      - key: index.html
-                        path: index.html
-
-    - name: Create nginx service
-      k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: nginx-service
-            namespace: default
-          spec:
-            selector:
-              app: nginx
-            ports:
-              - protocol: TCP
-                port: 80
-                targetPort: 80
-            type: LoadBalancer
-
-
-```
-Afterwards, I navigated into the ansible_deployment directory and executed the Ansible playbook using the following command:
-
-```sh
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster 
-% cd ansible_deployment 
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
-% ansible-playbook deploy-nginx.yml
-```
-my ansible playbook output:
-
-```sh
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
-% ansible-playbook deploy-nginx.yml
-
-PLAY [Deploy nginx with custom default site on EKS cluster] ***************************************************************************************************************************************************************************************************************
-
-TASK [Create ConfigMap with custom index.html] ****************************************************************************************************************************************************************************************************************************
-changed: [localhost]
-
-TASK [Create nginx deployment with custom html volume] ********************************************************************************************************************************************************************************************************************
-changed: [localhost]
-
-TASK [Create nginx service] ***********************************************************************************************************************************************************************************************************************************************
-ok: [localhost]
-
-PLAY RECAP ****************************************************************************************************************************************************************************************************************************************************************
-localhost                  : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
-```
-```sh
-sgworker@MacBook-Pro-3.local /Users/sgworker/Desktop/Capstone-Project-2/eks-cluster/ansible_deployment 
-% kubectl get svc nginx-service
-
-NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)        AGE
-nginx-service   LoadBalancer   172.20.46.49   aa8fa9d038a804602bba24aff2b4ca49-389869002.eu-west-1.elb.amazonaws.com   80:32208/TCP   12m
-```
-I accessed my deployed app in the browser, and here are the screenshots.
-
-<img width="1616" height="1012" alt="Bildschirmfoto 2025-07-11 um 16 01 22" src="https://github.com/user-attachments/assets/8a2c3b3d-e585-4a05-815d-1d0b7ab5a9f4" />
-
-
-
-
-Finally, I deleted the EKS cluster using Terraform in order to avoid further costs.
-
-
-
+# CAPSTONE PROJECT-5 project execution
 
 # 15 - Configuration Management with Ansible my work
 #### This project is for the Devops Bootcamp module "15-Configuration Management with Ansible" 
 
 ### What did I build?
-I built an automated deployment setup using Ansible for provisioning infrastructure and deploying a Java Gradle application.
+I built a set of automated Ansible projects to support Java application deployment and infrastructure provisioning. This includes automating the build and deployment of Java artifacts to remote servers, pushing artifacts to a Nexus repository, dynamically creating Jenkins servers on AWS EC2 and Ubuntu machines, and running Jenkins in Docker containers.
 
 ### What have I learned?
-This project taught me how to use Ansible for full infrastructure automation, how to push application artifacts to a Nexus repository, and how to deploy applications onto a Kubernetes cluster.
-I also gained hands-on experience with provisioning EC2 instances on AWS and setting up local Kubernetes environments with Docker Desktop.
+I learned how to automate application deployment workflows with Ansible, including managing users and processes on remote servers. I gained experience integrating CI/CD pipelines with artifact repositories like Nexus. I also learned to provision and configure infrastructure dynamically across different environments (AWS EC2 and Ubuntu), and to containerize services with Docker for flexible deployment. Additionally, I practiced writing modular and conditional Ansible playbooks to support multiple platforms.
+
 
 ### My project description. 
-I pushed a Java Gradle application to a Nexus repository. Then, I used Ansible to provision two EC2 instances on AWS. On one instance, I installed Java and Jenkins (as a regular application, not used for automation).
-Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the application to the cluster — again fully automated with Ansible. The entire process from infrastructure provisioning to deployment was handled through Ansible without using Jenkins pipelines.
-
+The project consists of multiple Ansible playbooks aimed at streamlining development and deployment workflows. First, I automated the build and deployment of a Java Gradle project, ensuring seamless updates by stopping existing services and replacing old artifacts. Then, I enabled pushing Java artifacts to a Nexus repository for team-wide sharing. To support continuous integration, I created automation for provisioning Jenkins servers dynamically on both AWS EC2 and Ubuntu environments, including necessary tools like Docker and Node.js. Finally, I extended this to run Jenkins inside Docker containers, enabling easy and consistent CI/CD environments. This project demonstrates practical use of automation, configuration management, and containerization to enhance DevOps efficiency.
 
 ## 📄 Included PDF Resources
-
 
 
 ## Evidence / Proof
@@ -263,10 +33,8 @@ Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the a
 Here are my notes, work, solutions, and test results for the module **"Configuration Management with Ansible"**:  
 👉 [PDF Link to Module Notes & Work](./15-Configuration_Management_with_Ansible.pdf)
 
-
 All of my notes, work, solutions, and test results can be found in the PDF 11-Kubernetes_on_AWS-EKS.pdf. 
 My complete documentation, including all notes and tests from the bootcamp, is available in this repository: https://github.com/Saban39/my_devops-bootcamp-pdf-notes-and-solutions.git
-
 
 
 ## My notes, work, solutions, and test results for Module "Configuration Management with Ansible"
