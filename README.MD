@@ -245,12 +245,16 @@ Finally, I deleted the EKS cluster using Terraform in order to avoid further cos
 # 15 - Configuration Management with Ansible my work
 #### This project is for the Devops Bootcamp module "15-Configuration Management with Ansible" 
 
+### What did I build?
 I built an automated deployment setup using Ansible for provisioning infrastructure and deploying a Java Gradle application.
+
+### What have I learned?
 This project taught me how to use Ansible for full infrastructure automation, how to push application artifacts to a Nexus repository, and how to deploy applications onto a Kubernetes cluster.
 I also gained hands-on experience with provisioning EC2 instances on AWS and setting up local Kubernetes environments with Docker Desktop.
+
+### My project description. 
 I pushed a Java Gradle application to a Nexus repository. Then, I used Ansible to provision two EC2 instances on AWS. On one instance, I installed Java and Jenkins (as a regular application, not used for automation).
 Using Docker Desktop, I set up a local Kubernetes cluster. I then deployed the application to the cluster — again fully automated with Ansible. The entire process from infrastructure provisioning to deployment was handled through Ansible without using Jenkins pipelines.
-
 
 
 ## 📄 Included PDF Resources
