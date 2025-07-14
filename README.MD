@@ -1,14 +1,3 @@
-## Capstone Project 5: Ansible Integration in Jenkins
-
-### What did I build?
-I built a Kubernetes (EKS) cluster on Amazon Web Services using Terraform. After the infrastructure was provisioned, I used an Ansible playbook, along with the Kubernetes Ansible module, to deploy an Nginx web server with a custom default HTML page inside the EKS cluster.
-
-### What have I learned?
-Through this project, I learned how to use Terraform to provision cloud infrastructure and create a production-ready Kubernetes cluster on AWS. I also gained hands-on experience using Ansible for Kubernetes resource management, including creating ConfigMaps, Deployments, and Services. Additionally, I learned how to troubleshoot cluster access issues and how to expose Kubernetes services using a LoadBalancer.
-
-### My project description. 
-The goal of my project was to automate the creation and deployment of a simple web application in a cloud-native environment. First, I used Terraform to define and provision an Amazon EKS cluster. Once the cluster was active, I created an Ansible playbook that deployed an Nginx web server into the cluster. The Nginx server used a custom HTML page, stored in a ConfigMap, which was mounted into the container. The application was exposed to the internet via a LoadBalancer, making it accessible through a browser. After verifying that everything was working, I terminated the cluster using Terraform to avoid unnecessary costs.
-
 
 # CAPSTONE PROJECT-5 project execution
 
